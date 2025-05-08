@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 offset-lg-2 text-center mb-5">
+        <h1 class="display-4 fw-bold">欢迎使用数据分析平台</h1>
+        <p class="lead">一个强大、直观的数据分析工具，助您快速洞察数据价值</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-primary shadow-sm">
+            <div class="card-body text-center">
+                <div class="feature-icon bg-primary bg-gradient text-white rounded-circle mb-3">
+                    <i class="fas fa-upload fa-2x p-3"></i>
+                </div>
+                <h3 class="card-title">上传数据</h3>
+                <p class="card-text">支持CSV和Excel格式的数据导入，简单几步即可开始分析。</p>
+                <a href="{{ url_for('upload') }}" class="btn btn-primary mt-3">
+                    <i class="fas fa-upload me-1"></i> 上传数据
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-success shadow-sm">
+            <div class="card-body text-center">
+                <div class="feature-icon bg-success bg-gradient text-white rounded-circle mb-3">
+                    <i class="fas fa-chart-pie fa-2x p-3"></i>
+                </div>
+                <h3 class="card-title">可视化分析</h3>
+                <p class="card-text">提供丰富的图表类型和分析工具，让数据直观可视。</p>
+                <a href="{{ url_for('datasets_page') }}" class="btn btn-success mt-3">
+                    <i class="fas fa-chart-bar me-1"></i> 开始分析
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-info shadow-sm">
+            <div class="card-body text-center">
+                <div class="feature-icon bg-info bg-gradient text-white rounded-circle mb-3">
+                    <i class="fas fa-file-export fa-2x p-3"></i>
+                </div>
+                <h3 class="card-title">报告导出</h3>
+                <p class="card-text">生成专业的数据分析报告，支持多种格式导出和分享。</p>
+                <a href="{{ url_for('datasets_page') }}" class="btn btn-info mt-3 text-white">
+                    <i class="fas fa-file-alt me-1"></i> 查看数据集
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h4 class="mb-0"><i class="fas fa-question-circle me-2"></i>如何使用</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3 mb-md-0">
+                        <div class="text-center">
+                            <div class="step-circle bg-primary text-white mb-2">1</div>
+                            <h5>上传数据</h5>
+                            <p>上传CSV或Excel格式的数据文件</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3 mb-md-0">
+                        <div class="text-center">
+                            <div class="step-circle bg-primary text-white mb-2">2</div>
+                            <h5>选择数据集</h5>
+                            <p>从您的数据集列表中选择要分析的数据</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3 mb-md-0">
+                        <div class="text-center">
+                            <div class="step-circle bg-primary text-white mb-2">3</div>
+                            <h5>创建图表</h5>
+                            <p>选择图表类型和数据维度进行可视化</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="step-circle bg-primary text-white mb-2">4</div>
+                            <h5>导出报告</h5>
+                            <p>将您的分析结果导出为报告或图表</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .feature-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 64px;
+        height: 64px;
+    }
+    
+    .step-circle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+</style>
+{% endblock %} 

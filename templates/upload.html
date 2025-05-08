@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 offset-lg-2">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0"><i class="fas fa-upload me-2"></i>上传数据文件</h3>
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-info-circle me-2"></i>支持的文件格式</h5>
+                    <ul class="mb-0">
+                        <li>CSV文件 (.csv)</li>
+                        <li>Excel文件 (.xlsx, .xls)</li>
+                    </ul>
+                </div>
+                
+                <form method="post" action="{{ url_for('upload') }}" enctype="multipart/form-data" class="mt-4" id="upload-form">
+                    <div class="mb-4">
+                        <div class="upload-area text-center p-5 border-2 border-dashed rounded">
+                            <i class="fas fa-file-upload fa-4x text-primary mb-3"></i>
+                            <h4>拖放文件到此处或点击选择文件</h4>
+                            <p class="text-muted">最大文件大小: 10MB</p>
+                            <input type="file" name="file" id="file-input" class="d-none" accept=".csv,.xlsx,.xls">
+                            <button type="button" class="btn btn-outline-primary btn-lg mt-3" id="select-file-btn">
+                                <i class="fas fa-folder-open me-2"></i>选择文件
+                            </button>
+                            <div class="selected-file mt-3" style="display: none;">
+                                <div class="alert alert-success">
+                                    <i class="fas fa-file-alt me-2"></i>已选择文件: <span id="file-name"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg" id="upload-btn" disabled>
+                            <i class="fas fa-cloud-upload-alt me-2"></i>上传文件
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .border-dashed {
+        border-style: dashed !important;
+    }
+    
+    .upload-area {
+        cursor: pointer;
+        border-color: #ccc;
+        transition: all 0.3s;
+    }
+    
+    .upload-area:hover, .upload-area.dragover {
+        border-color: #0d6efd;
+        background-color: rgba(13, 110, 253, 0.05);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const uploadArea = document.querySelector('.upload-area');
+        const fileInput = document.getElementById('file-input');
+        const selectFileBtn = document.getElementById('select-file-btn');
+        const uploadBtn = document.getElementById('upload-btn');
+        const fileName = document.getElementById('file-name');
+        const selectedFile = document.querySelector('.selected-file');
+        
+        selectFileBtn.addEventListener('click', function() {
+            fileInput.click();
+        });
+        
+        uploadArea.addEventListener('click', function(e) {
+            if (e.target === uploadArea || e.target.closest('.upload-area') && !e.target.closest('button')) {
+                fileInput.click();
+            }
+        });
+        
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', function() {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            if (e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                const file = fileInput.files[0];
+                fileName.textContent = file.name;
+                selectedFile.style.display = 'block';
+                uploadBtn.disabled = false;
+            }
+        });
+        
+        fileInput.addEventListener('change', function() {
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                fileName.textContent = file.name;
+                selectedFile.style.display = 'block';
+                uploadBtn.disabled = false;
+            } else {
+                selectedFile.style.display = 'none';
+                uploadBtn.disabled = true;
+            }
+        });
+    });
+</script>
+{% endblock %} 

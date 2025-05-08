@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-database me-2"></i>我的数据集</h2>
+    <a href="{{ url_for('upload') }}" class="btn btn-primary">
+        <i class="fas fa-upload me-1"></i> 上传新数据
+    </a>
+</div>
+
+{% if datasets %}
+<div class="row">
+    {% for dataset_id, dataset in datasets.items() %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas {% if dataset.type == 'csv' %}fa-file-csv{% else %}fa-file-excel{% endif %} me-2"></i>
+                    {{ dataset.name }}
+                </h5>
+                <span class="badge bg-primary">{{ dataset.type }}</span>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <p class="mb-1"><strong>数据维度:</strong> {{ dataset.shape[0] }} 行 × {{ dataset.shape[1] }} 列</p>
+                    <p class="mb-0"><strong>列名:</strong> 
+                        <span class="text-truncate d-inline-block" style="max-width: 250px;">
+                            {{ dataset.columns|join(', ') }}
+                        </span>
+                    </p>
+                </div>
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('analyze', dataset_id=dataset_id) }}" class="btn btn-success">
+                        <i class="fas fa-chart-bar me-1"></i> 分析数据
+                    </a>
+                </div>
+            </div>
+            <div class="card-footer text-muted">
+                <small>ID: {{ dataset_id }}</small>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card shadow-sm text-center p-5">
+            <div class="card-body">
+                <i class="fas fa-database fa-5x text-muted mb-3"></i>
+                <h3>您还没有上传任何数据集</h3>
+                <p class="text-muted">上传数据文件开始您的分析之旅</p>
+                <a href="{{ url_for('upload') }}" class="btn btn-primary btn-lg mt-3">
+                    <i class="fas fa-upload me-1"></i> 上传数据
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %} 
