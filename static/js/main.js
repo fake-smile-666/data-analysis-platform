@@ -37,7 +37,7 @@ function addFadeInEffect() {
  * 设置警告消息自动消失
  */
 function setupAlertDismiss() {
-    const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
+    const alerts = document.querySelectorAll('.alert:not(.alert-permanent):not(#format-info)');
     alerts.forEach(alert => {
         setTimeout(() => {
             const bsAlert = new bootstrap.Alert(alert);

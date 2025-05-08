@@ -1,0 +1,727 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="fas fa-robot me-2"></i>
+        AI分析 - {{ dataset.name }}
+    </h2>
+    <a href="{{ url_for('datasets_page') }}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left me-1"></i> 返回数据集
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-info-circle me-2"></i>AI分析功能介绍</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3 mb-md-0">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
+                                <h5 class="card-title">时间序列预测</h5>
+                                <p class="card-text small">基于历史数据预测未来趋势</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3 mb-md-0">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                                <h5 class="card-title">异常检测</h5>
+                                <p class="card-text small">识别数据中的异常值和离群点</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3 mb-md-0">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="fas fa-project-diagram fa-3x text-info mb-3"></i>
+                                <h5 class="card-title">相关性分析</h5>
+                                <p class="card-text small">揭示变量之间的关系和模式</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="fas fa-th fa-3x text-success mb-3"></i>
+                                <h5 class="card-title">模式挖掘</h5>
+                                <p class="card-text small">自动聚类分析，发现数据中的隐藏模式</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 时间序列预测 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-chart-line me-2"></i>时间序列预测</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-4">
+                        <form id="forecast-form" class="mb-4">
+                            <div class="mb-3">
+                                <label for="forecast-date-column" class="form-label">日期列</label>
+                                <select class="form-select" id="forecast-date-column" required>
+                                    <option value="">选择日期列</option>
+                                    {% for column in date_columns %}
+                                    <option value="{{ column }}">{{ column }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">包含日期/时间数据的列</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="forecast-target-column" class="form-label">目标值列</label>
+                                <select class="form-select" id="forecast-target-column" required>
+                                    <option value="">选择目标列</option>
+                                    {% for column in numeric_columns %}
+                                    <option value="{{ column }}">{{ column }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">要预测的数值列</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="forecast-periods" class="form-label">预测周期</label>
+                                <input type="number" class="form-control" id="forecast-periods" value="30" min="1" max="365" required>
+                                <div class="form-text">预测未来的时间点数量</div>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-play me-1"></i> 运行预测
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-lg-8">
+                        <div id="forecast-results">
+                            <div class="text-center py-5" id="forecast-placeholder">
+                                <i class="fas fa-chart-line fa-4x text-muted mb-3"></i>
+                                <h5 class="text-muted">选择参数并点击"运行预测"</h5>
+                            </div>
+                            <div id="forecast-loading" class="text-center py-5 d-none">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">加载中...</span>
+                                </div>
+                                <h5 class="mt-3">正在计算预测结果...</h5>
+                            </div>
+                            <div id="forecast-plot" class="d-none"></div>
+                            <div id="forecast-summary" class="mt-3 d-none">
+                                <h5>预测结果摘要</h5>
+                                <pre class="bg-light p-3 rounded small" style="max-height: 200px; overflow-y: auto;"></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 异常检测 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning text-white">
+                <h4 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>异常检测</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-4">
+                        <form id="anomaly-form" class="mb-4">
+                            <div class="mb-3">
+                                <label class="form-label">选择要检测的列</label>
+                                <div class="bg-light p-3 rounded" style="max-height: 200px; overflow-y: auto;">
+                                    {% for column in numeric_columns %}
+                                    <div class="form-check">
+                                        <input class="form-check-input anomaly-column-check" type="checkbox" value="{{ column }}" id="anomaly-col-{{ loop.index }}">
+                                        <label class="form-check-label" for="anomaly-col-{{ loop.index }}">
+                                            {{ column }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="form-text">选择要进行异常检测的数值列</div>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="fas fa-search me-1"></i> 检测异常
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-lg-8">
+                        <div id="anomaly-results">
+                            <div class="text-center py-5" id="anomaly-placeholder">
+                                <i class="fas fa-exclamation-triangle fa-4x text-muted mb-3"></i>
+                                <h5 class="text-muted">选择要检测的列并点击"检测异常"</h5>
+                            </div>
+                            <div id="anomaly-loading" class="text-center py-5 d-none">
+                                <div class="spinner-border text-warning" role="status">
+                                    <span class="visually-hidden">加载中...</span>
+                                </div>
+                                <h5 class="mt-3">正在检测异常...</h5>
+                            </div>
+                            <div id="anomaly-summary" class="mb-3 d-none">
+                                <div class="alert alert-warning">
+                                    <h5><i class="fas fa-info-circle me-2"></i>检测结果</h5>
+                                    <p id="anomaly-stats"></p>
+                                </div>
+                            </div>
+                            <div id="anomaly-plots" class="d-none"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 相关性分析 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0"><i class="fas fa-project-diagram me-2"></i>相关性分析</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-4">
+                        <form id="correlation-form" class="mb-4">
+                            <div class="mb-3">
+                                <label for="correlation-target" class="form-label">目标变量 (可选)</label>
+                                <select class="form-select" id="correlation-target">
+                                    <option value="">所有变量的相关性</option>
+                                    {% for column in numeric_columns %}
+                                    <option value="{{ column }}">{{ column }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">选择一个变量，分析其他变量与它的相关性</div>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-info">
+                                    <i class="fas fa-calculator me-1"></i> 计算相关性
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-lg-8">
+                        <div id="correlation-results">
+                            <div class="text-center py-5" id="correlation-placeholder">
+                                <i class="fas fa-project-diagram fa-4x text-muted mb-3"></i>
+                                <h5 class="text-muted">设置参数并点击"计算相关性"</h5>
+                            </div>
+                            <div id="correlation-loading" class="text-center py-5 d-none">
+                                <div class="spinner-border text-info" role="status">
+                                    <span class="visually-hidden">加载中...</span>
+                                </div>
+                                <h5 class="mt-3">正在计算相关性...</h5>
+                            </div>
+                            <div id="correlation-heatmap" class="d-none"></div>
+                            <div id="correlation-bar" class="mt-4 d-none"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 模式挖掘 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-th me-2"></i>模式挖掘 (聚类分析)</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-4">
+                        <form id="pattern-form" class="mb-4">
+                            <div class="mb-3">
+                                <label class="form-label">选择要进行聚类的列</label>
+                                <div class="bg-light p-3 rounded" style="max-height: 200px; overflow-y: auto;">
+                                    {% for column in numeric_columns %}
+                                    <div class="form-check">
+                                        <input class="form-check-input pattern-column-check" type="checkbox" value="{{ column }}" id="pattern-col-{{ loop.index }}">
+                                        <label class="form-check-label" for="pattern-col-{{ loop.index }}">
+                                            {{ column }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="form-text">选择要进行聚类分析的数值列</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="pattern-clusters" class="form-label">聚类数量</label>
+                                <input type="number" class="form-control" id="pattern-clusters" value="3" min="2" max="10" required>
+                                <div class="form-text">设置要划分的聚类数量</div>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-search me-1"></i> 挖掘模式
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-lg-8">
+                        <div id="pattern-results">
+                            <div class="text-center py-5" id="pattern-placeholder">
+                                <i class="fas fa-th fa-4x text-muted mb-3"></i>
+                                <h5 class="text-muted">选择要聚类的列并点击"挖掘模式"</h5>
+                            </div>
+                            <div id="pattern-loading" class="text-center py-5 d-none">
+                                <div class="spinner-border text-success" role="status">
+                                    <span class="visually-hidden">加载中...</span>
+                                </div>
+                                <h5 class="mt-3">正在进行聚类分析...</h5>
+                            </div>
+                            <div id="pattern-plot" class="d-none"></div>
+                            <div id="pattern-profiles" class="mt-4 d-none">
+                                <h5>聚类特征分析</h5>
+                                <div class="row" id="pattern-radar-plots"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 特征重要性分析 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0"><i class="fas fa-star me-2"></i>特征重要性分析</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-4">
+                        <form id="importance-form" class="mb-4">
+                            <div class="mb-3">
+                                <label for="importance-target" class="form-label">目标变量</label>
+                                <select class="form-select" id="importance-target" required>
+                                    <option value="">选择目标变量</option>
+                                    {% for column in columns %}
+                                    <option value="{{ column }}">{{ column }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">选择要预测/解释的目标变量</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">特征变量 (可选)</label>
+                                <div class="bg-light p-3 rounded" style="max-height: 200px; overflow-y: auto;">
+                                    {% for column in numeric_columns %}
+                                    <div class="form-check">
+                                        <input class="form-check-input importance-column-check" type="checkbox" value="{{ column }}" id="importance-col-{{ loop.index }}">
+                                        <label class="form-check-label" for="importance-col-{{ loop.index }}">
+                                            {{ column }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="form-text">默认使用所有数值列作为特征</div>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="fas fa-calculator me-1"></i> 计算重要性
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-lg-8">
+                        <div id="importance-results">
+                            <div class="text-center py-5" id="importance-placeholder">
+                                <i class="fas fa-star fa-4x text-muted mb-3"></i>
+                                <h5 class="text-muted">选择目标变量并点击"计算重要性"</h5>
+                            </div>
+                            <div id="importance-loading" class="text-center py-5 d-none">
+                                <div class="spinner-border text-danger" role="status">
+                                    <span class="visually-hidden">加载中...</span>
+                                </div>
+                                <h5 class="mt-3">正在计算特征重要性...</h5>
+                            </div>
+                            <div id="importance-plot" class="d-none"></div>
+                            <div id="importance-table" class="mt-3 d-none">
+                                <h5>特征重要性排名</h5>
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>特征</th>
+                                            <th>重要性</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="importance-table-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const datasetId = '{{ dataset_id }}';
+        
+        // 检查Plotly是否加载成功
+        if (typeof Plotly === 'undefined') {
+            console.error('Plotly库未能正确加载！');
+            alert('数据可视化库加载失败，部分功能可能无法正常使用。请刷新页面重试。');
+        }
+        
+        // 时间序列预测
+        const forecastForm = document.getElementById('forecast-form');
+        forecastForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const dateColumn = document.getElementById('forecast-date-column').value;
+            const targetColumn = document.getElementById('forecast-target-column').value;
+            const periods = document.getElementById('forecast-periods').value;
+            
+            // 显示加载中
+            document.getElementById('forecast-placeholder').classList.add('d-none');
+            document.getElementById('forecast-loading').classList.remove('d-none');
+            document.getElementById('forecast-plot').classList.add('d-none');
+            document.getElementById('forecast-summary').classList.add('d-none');
+            
+            // 发送请求
+            fetch(`/api/ai/forecast/${datasetId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    date_column: dateColumn,
+                    target_column: targetColumn,
+                    periods: periods
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 隐藏加载中
+                document.getElementById('forecast-loading').classList.add('d-none');
+                
+                if (data.error) {
+                    alert(`错误: ${data.error}`);
+                    document.getElementById('forecast-placeholder').classList.remove('d-none');
+                    return;
+                }
+                
+                // 显示图表
+                document.getElementById('forecast-plot').classList.remove('d-none');
+                document.getElementById('forecast-plot').innerHTML = '';
+                Plotly.newPlot('forecast-plot', JSON.parse(data.visualization));
+                
+                // 显示摘要
+                document.getElementById('forecast-summary').classList.remove('d-none');
+                document.querySelector('#forecast-summary pre').textContent = data.model_summary;
+            })
+            .catch(error => {
+                document.getElementById('forecast-loading').classList.add('d-none');
+                document.getElementById('forecast-placeholder').classList.remove('d-none');
+                alert(`请求失败: ${error}`);
+            });
+        });
+        
+        // 异常检测
+        const anomalyForm = document.getElementById('anomaly-form');
+        anomalyForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const columns = [];
+            document.querySelectorAll('.anomaly-column-check:checked').forEach(checkbox => {
+                columns.push(checkbox.value);
+            });
+            
+            if (columns.length === 0) {
+                alert('请至少选择一个列进行异常检测');
+                return;
+            }
+            
+            // 显示加载中
+            document.getElementById('anomaly-placeholder').classList.add('d-none');
+            document.getElementById('anomaly-loading').classList.remove('d-none');
+            document.getElementById('anomaly-summary').classList.add('d-none');
+            document.getElementById('anomaly-plots').classList.add('d-none');
+            
+            // 发送请求
+            fetch(`/api/ai/anomaly/${datasetId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    columns: columns
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 隐藏加载中
+                document.getElementById('anomaly-loading').classList.add('d-none');
+                
+                if (data.error) {
+                    alert(`错误: ${data.error}`);
+                    document.getElementById('anomaly-placeholder').classList.remove('d-none');
+                    return;
+                }
+                
+                // 显示摘要
+                document.getElementById('anomaly-summary').classList.remove('d-none');
+                const anomalyStatsDiv = document.getElementById('anomaly-stats');
+                if (anomalyStatsDiv) {
+                    anomalyStatsDiv.innerHTML = `
+                        检测到 <strong>${data.anomaly_count}</strong> 个异常值，
+                        占总数的 <strong>${data.anomaly_percent.toFixed(2)}%</strong>
+                    `;
+                }
+                
+                // 显示图表
+                document.getElementById('anomaly-plots').classList.remove('d-none');
+                document.getElementById('anomaly-plots').innerHTML = '';
+                
+                // 为每个列创建图表
+                const anomalyPlotsDiv = document.getElementById('anomaly-plots');
+                if (anomalyPlotsDiv) {
+                    for (const column in data.visualizations) {
+                        const div = document.createElement('div');
+                        div.className = 'mb-4';
+                        anomalyPlotsDiv.appendChild(div);
+                        Plotly.newPlot(div, JSON.parse(data.visualizations[column]));
+                    }
+                }
+            })
+            .catch(error => {
+                document.getElementById('anomaly-loading').classList.add('d-none');
+                document.getElementById('anomaly-placeholder').classList.remove('d-none');
+                alert(`请求失败: ${error}`);
+            });
+        });
+        
+        // 相关性分析
+        const correlationForm = document.getElementById('correlation-form');
+        correlationForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const targetColumn = document.getElementById('correlation-target').value;
+            
+            // 显示加载中
+            document.getElementById('correlation-placeholder').classList.add('d-none');
+            document.getElementById('correlation-loading').classList.remove('d-none');
+            document.getElementById('correlation-heatmap').classList.add('d-none');
+            document.getElementById('correlation-bar').classList.add('d-none');
+            
+            // 发送请求
+            fetch(`/api/ai/correlation/${datasetId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    target_column: targetColumn
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 隐藏加载中
+                document.getElementById('correlation-loading').classList.add('d-none');
+                
+                if (data.error) {
+                    alert(`错误: ${data.error}`);
+                    document.getElementById('correlation-placeholder').classList.remove('d-none');
+                    return;
+                }
+                
+                // 显示热图
+                document.getElementById('correlation-heatmap').classList.remove('d-none');
+                document.getElementById('correlation-heatmap').innerHTML = '';
+                Plotly.newPlot('correlation-heatmap', JSON.parse(data.heatmap_visualization));
+                
+                // 如果有目标列，显示条形图
+                if (data.target_visualization) {
+                    document.getElementById('correlation-bar').classList.remove('d-none');
+                    document.getElementById('correlation-bar').innerHTML = '';
+                    Plotly.newPlot('correlation-bar', JSON.parse(data.target_visualization));
+                } else {
+                    document.getElementById('correlation-bar').classList.add('d-none');
+                }
+            })
+            .catch(error => {
+                document.getElementById('correlation-loading').classList.add('d-none');
+                document.getElementById('correlation-placeholder').classList.remove('d-none');
+                alert(`请求失败: ${error}`);
+            });
+        });
+        
+        // 模式挖掘
+        const patternForm = document.getElementById('pattern-form');
+        patternForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const columns = [];
+            document.querySelectorAll('.pattern-column-check:checked').forEach(checkbox => {
+                columns.push(checkbox.value);
+            });
+            
+            if (columns.length === 0) {
+                alert('请至少选择一个列进行聚类分析');
+                return;
+            }
+            
+            const nClusters = document.getElementById('pattern-clusters').value;
+            
+            // 显示加载中
+            document.getElementById('pattern-placeholder').classList.add('d-none');
+            document.getElementById('pattern-loading').classList.remove('d-none');
+            document.getElementById('pattern-plot').classList.add('d-none');
+            document.getElementById('pattern-profiles').classList.add('d-none');
+            
+            // 发送请求
+            fetch(`/api/ai/pattern/${datasetId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    columns: columns,
+                    n_clusters: nClusters
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 隐藏加载中
+                document.getElementById('pattern-loading').classList.add('d-none');
+                
+                if (data.error) {
+                    alert(`错误: ${data.error}`);
+                    document.getElementById('pattern-placeholder').classList.remove('d-none');
+                    return;
+                }
+                
+                // 显示聚类图
+                document.getElementById('pattern-plot').classList.remove('d-none');
+                document.getElementById('pattern-plot').innerHTML = '';
+                Plotly.newPlot('pattern-plot', JSON.parse(data.clustering_visualization));
+                
+                // 显示雷达图
+                if (data.radar_visualizations && Object.keys(data.radar_visualizations).length > 0) {
+                    document.getElementById('pattern-profiles').classList.remove('d-none');
+                    const radarPlots = document.getElementById('pattern-radar-plots');
+                    radarPlots.innerHTML = '';
+                    
+                    for (const cluster in data.radar_visualizations) {
+                        const col = document.createElement('div');
+                        col.className = 'col-md-6 mb-3';
+                        
+                        const radarDiv = document.createElement('div');
+                        col.appendChild(radarDiv);
+                        radarPlots.appendChild(col);
+                        
+                        Plotly.newPlot(radarDiv, JSON.parse(data.radar_visualizations[cluster]));
+                    }
+                } else {
+                    document.getElementById('pattern-profiles').classList.add('d-none');
+                }
+            })
+            .catch(error => {
+                document.getElementById('pattern-loading').classList.add('d-none');
+                document.getElementById('pattern-placeholder').classList.remove('d-none');
+                alert(`请求失败: ${error}`);
+            });
+        });
+        
+        // 特征重要性分析
+        const importanceForm = document.getElementById('importance-form');
+        importanceForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const targetColumn = document.getElementById('importance-target').value;
+            if (!targetColumn) {
+                alert('请选择目标变量');
+                return;
+            }
+            
+            const featureColumns = [];
+            document.querySelectorAll('.importance-column-check:checked').forEach(checkbox => {
+                featureColumns.push(checkbox.value);
+            });
+            
+            // 显示加载中
+            document.getElementById('importance-placeholder').classList.add('d-none');
+            document.getElementById('importance-loading').classList.remove('d-none');
+            document.getElementById('importance-plot').classList.add('d-none');
+            document.getElementById('importance-table').classList.add('d-none');
+            
+            // 发送请求
+            fetch(`/api/ai/importance/${datasetId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    target_column: targetColumn,
+                    feature_columns: featureColumns.length > 0 ? featureColumns : null
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 隐藏加载中
+                document.getElementById('importance-loading').classList.add('d-none');
+                
+                if (data.error) {
+                    alert(`错误: ${data.error}`);
+                    document.getElementById('importance-placeholder').classList.remove('d-none');
+                    return;
+                }
+                
+                // 显示图表
+                document.getElementById('importance-plot').classList.remove('d-none');
+                document.getElementById('importance-plot').innerHTML = '';
+                Plotly.newPlot('importance-plot', JSON.parse(data.visualization));
+                
+                // 显示表格
+                document.getElementById('importance-table').classList.remove('d-none');
+                const tableBody = document.getElementById('importance-table-body');
+                tableBody.innerHTML = '';
+                
+                data.importance_data.forEach(item => {
+                    const row = document.createElement('tr');
+                    
+                    const featureCell = document.createElement('td');
+                    featureCell.textContent = item.feature;
+                    row.appendChild(featureCell);
+                    
+                    const importanceCell = document.createElement('td');
+                    importanceCell.textContent = item.importance.toFixed(4);
+                    row.appendChild(importanceCell);
+                    
+                    tableBody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                document.getElementById('importance-loading').classList.add('d-none');
+                document.getElementById('importance-placeholder').classList.remove('d-none');
+                alert(`请求失败: ${error}`);
+            });
+        });
+    });
+</script>
+{% endblock %} 

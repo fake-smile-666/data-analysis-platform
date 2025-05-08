@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center mb-4">
+    <div class="col-lg-10">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">欢迎使用数据分析平台</h3>
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-6 mb-4 mb-md-0">
+                        <div class="text-center">
+                            <img src="{{ url_for('static', filename='img/data_analysis.svg') }}" alt="数据分析插图" class="img-fluid" style="max-height: 250px;">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h4>开始您的数据探索之旅</h4>
+                        <p class="lead">上传您的数据文件，使用我们的分析工具，发现数据中隐藏的价值。</p>
+                        <div class="d-grid gap-2 mt-4">
+                            <a href="{{ url_for('upload') }}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-upload me-2"></i> 上传数据
+                            </a>
+                            <a href="{{ url_for('datasets_page') }}" class="btn btn-outline-primary btn-lg">
+                                <i class="fas fa-database me-2"></i> 查看数据集
+                            </a>
+                            <a href="{{ url_for('create_ai_example_dataset') }}" class="btn btn-success btn-lg">
+                                <i class="fas fa-robot me-2"></i> 创建AI示例数据集
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row row-cols-1 row-cols-md-3 g-4 justify-content-center">
+    <div class="col">
+        <div class="card shadow-sm h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-bar fa-3x text-primary mb-3"></i>
+                <h4 class="card-title">基础数据分析</h4>
+                <p class="card-text">创建图表和基本统计分析，快速了解您的数据结构和特征。</p>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card shadow-sm h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-robot fa-3x text-success mb-3"></i>
+                <h4 class="card-title">AI辅助分析</h4>
+                <p class="card-text">利用人工智能进行高级分析，包括时间序列预测、异常检测和相关性分析。</p>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card shadow-sm h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-file-export fa-3x text-info mb-3"></i>
+                <h4 class="card-title">结果导出</h4>
+                <p class="card-text">将分析结果导出为多种格式，方便您在其他应用中使用或分享。</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-5 bg-light rounded p-4 shadow-sm">
+    <h4 class="border-bottom pb-2 mb-3"><i class="fas fa-lightbulb text-warning me-2"></i>分析平台特点</h4>
+    <div class="row">
+        <div class="col-md-6">
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item bg-transparent"><i class="fas fa-check-circle text-success me-2"></i>支持CSV和Excel格式的数据文件</li>
+                <li class="list-group-item bg-transparent"><i class="fas fa-check-circle text-success me-2"></i>多种数据可视化图表类型</li>
+                <li class="list-group-item bg-transparent"><i class="fas fa-check-circle text-success me-2"></i>基础统计分析功能</li>
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item bg-transparent"><i class="fas fa-check-circle text-success me-2"></i>AI驱动的高级分析工具</li>
+                <li class="list-group-item bg-transparent"><i class="fas fa-check-circle text-success me-2"></i>直观的用户界面设计</li>
+                <li class="list-group-item bg-transparent"><i class="fas fa-check-circle text-success me-2"></i>交互式数据探索功能</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %} 
